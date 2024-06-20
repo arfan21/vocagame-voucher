@@ -2,6 +2,9 @@
 
 ### Database Schema
 
+![vocagame-voucher-erd](https://github.com/arfan21/vocagame-voucher/assets/48755707/7328b09d-0e0b-4f10-839b-764ced374640)
+
+
 ### API Specification
 
 -   Postman Collection: [Link](https://documenter.getpostman.com/view/10131591/2sA3XV8KTo)
