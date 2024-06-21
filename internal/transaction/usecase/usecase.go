@@ -222,16 +222,6 @@ func (uc UseCase) MidtransNotification(ctx context.Context, data model.MidtransN
 }
 
 func (uc UseCase) GetByEmail(ctx context.Context, req model.TransactionTrackingRequest) (res []model.TransactionResponse, err error) {
-	// if phone number not start with '+', add '+'
-	// maybe + is missing because url query param will be encoded
-	// if len(req.PhoneNumber) > 0 && req.PhoneNumber[0] != '+' {
-	// 	// if phone number start with empty space, remove it
-	// 	if req.PhoneNumber[0] == 32 {
-	// 		req.PhoneNumber = req.PhoneNumber[1:]
-	// 	}
-	// 	req.PhoneNumber = "+" + req.PhoneNumber
-	// }
-
 	err = validation.Validate(req)
 	if err != nil {
 		err = fmt.Errorf("transaction.uc.GetByPhoneNumber: failed to validate request: %w", err)
