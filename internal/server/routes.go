@@ -74,6 +74,7 @@ func (s Server) TransactionRoutes(handler *transactionhandler.HTTP) {
 	api := s.app.Group("/api/v1/transactions")
 	api.Post("/", handler.Create)
 	api.Get("/tracking", handler.Tracking)
+	api.Post("/:id/request-payment", handler.RequestNewPaymentLink)
 
 	callback := api.Group("/callback")
 	callback.Post("/midtrans", handler.MidtransNotification)

@@ -9,6 +9,7 @@ import (
 	"github.com/arfan21/vocagame/pkg/constant"
 	dbpostgres "github.com/arfan21/vocagame/pkg/db/postgres"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Repository struct {
@@ -134,6 +135,13 @@ func (r Repository) GetByID(ctx context.Context, id string) (res entity.Transact
 		&res.PaymentMethod.Name,
 	)
 	if err != nil {
+		var pgxError *pgconn.PgError
+		if errors.As(err, &pgxError) {
+			if pgxError.Code == constant.ErrSQLInvalidUUID {
+				err = constant.ErrTransactionNotFound
+			}
+		}
+
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = constant.ErrTransactionNotFound
 		}
@@ -142,4 +150,15 @@ func (r Repository) GetByID(ctx context.Context, id string) (res entity.Transact
 	}
 
 	return res, nil
+}
+
+func (r Repository) UpdateUpdatedAt(ctx context.Context, id string) (err error) {
+	query := `UPDATE transactions SET updated_at = NOW() WHERE id = $1`
+	_, err = r.db.Exec(ctx, query, id)
+	if err != nil {
+		err = fmt.Errorf("transaction.repo.UpdateUpdatedAt: failed to update updated_at: %w", err)
+		return err
+	}
+
+	return nil
 }

@@ -22,9 +22,10 @@ type config struct {
 }
 
 type service struct {
-	Timeout int    `mapstructure:"SERVICE_TIMEOUT"`
-	Name    string `mapstructure:"SERVICE_NAME"`
-	Version string `mapstructure:"SERVICE_VERSION"`
+	Timeout           int    `mapstructure:"SERVICE_TIMEOUT"`
+	Name              string `mapstructure:"SERVICE_NAME"`
+	Version           string `mapstructure:"SERVICE_VERSION"`
+	PaymentPageExpire int    `mapstructure:"PAYMENT_PAGE_EXPIRE"`
 }
 
 type database struct {
@@ -148,4 +149,5 @@ func initDefaultValue(v *viper.Viper) {
 	v.SetDefault("SERVICE_NAME", "vocagame")
 	v.SetDefault("SERVICE_TIMEOUT", 30)
 	v.SetDefault("OTEL_INSECURE", true)
+	v.SetDefault("PAYMENT_PAGE_EXPIRE", 5)
 }

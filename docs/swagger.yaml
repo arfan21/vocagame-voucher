@@ -51,6 +51,13 @@ definitions:
       updated_at:
         type: string
     type: object
+  github_com_arfan21_vocagame_internal_model.TransactionCreatedResponse:
+    properties:
+      id:
+        type: string
+      redirect_url:
+        type: string
+    type: object
   github_com_arfan21_vocagame_internal_model.TransactionRequest:
     properties:
       email:
@@ -187,6 +194,32 @@ paths:
                   $ref: '#/definitions/github_com_arfan21_vocagame_internal_model.TransactionResponse'
               type: object
       summary: Create Transaction
+      tags:
+      - Transaction
+  /api/v1/transactions/{id}/request-payment:
+    post:
+      consumes:
+      - application/json
+      description: Request New Payment Link
+      parameters:
+      - description: Transaction ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_arfan21_vocagame_pkg_pkgutil.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_arfan21_vocagame_internal_model.TransactionCreatedResponse'
+              type: object
+      summary: Request New Payment Link
       tags:
       - Transaction
   /api/v1/transactions/callback/midtrans:

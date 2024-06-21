@@ -16,6 +16,7 @@ type Repository interface {
 	GetList(ctx context.Context) (res []entity.Product, err error)
 	GetByID(ctx context.Context, id string, isForUpdate bool) (res entity.Product, err error)
 	ReduceStock(ctx context.Context, id string, qty int) error
+	IncreaseStock(ctx context.Context, id string, qty int) (err error)
 }
 
 type UseCase struct {
@@ -76,4 +77,8 @@ func (uc UseCase) GetByID(ctx context.Context, id string, isForUpdate bool) (res
 
 func (uc UseCase) ReduceStock(ctx context.Context, id string, qty int) error {
 	return uc.repo.ReduceStock(ctx, id, qty)
+}
+
+func (uc UseCase) IncreaseStock(ctx context.Context, id string, qty int) error {
+	return uc.repo.IncreaseStock(ctx, id, qty)
 }

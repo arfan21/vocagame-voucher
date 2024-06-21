@@ -15,6 +15,7 @@ type UseCase interface {
 	Create(ctx context.Context, data model.TransactionRequest, paymentClient clientpayment.Payment) (res model.TransactionCreatedResponse, err error)
 	MidtransNotification(ctx context.Context, data model.MidtransNotification) (err error)
 	GetByEmail(ctx context.Context, req model.TransactionTrackingRequest) (res []model.TransactionResponse, err error)
+	RequestNewPaymentLink(ctx context.Context, id string) (res model.TransactionCreatedResponse, err error)
 }
 
 type HTTP struct {
@@ -113,6 +114,30 @@ func (h HTTP) Tracking(c *fiber.Ctx) error {
 	}
 
 	res, err := h.uc.GetByEmail(ctx, req)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(pkgutil.HTTPResponse{
+		Code:    http.StatusOK,
+		Message: "Success",
+		Data:    res,
+	})
+}
+
+// @Summary Request New Payment Link
+// @Description Request New Payment Link
+// @Tags Transaction
+// @Accept json
+// @Produce json
+// @Param id path string true "Transaction ID"
+// @Success 200 {object} pkgutil.HTTPResponse{data=model.TransactionCreatedResponse}
+// @Router /api/v1/transactions/{id}/request-payment [post]
+func (h HTTP) RequestNewPaymentLink(c *fiber.Ctx) error {
+	ctx := c.UserContext()
+	id := c.Params("id")
+
+	res, err := h.uc.RequestNewPaymentLink(ctx, id)
 	if err != nil {
 		return err
 	}

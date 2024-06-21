@@ -6,6 +6,7 @@ import (
 	"time"
 
 	clientpayment "github.com/arfan21/vocagame/client/payment"
+	"github.com/arfan21/vocagame/config"
 	"github.com/arfan21/vocagame/internal/entity"
 	"github.com/arfan21/vocagame/internal/model"
 	productusecase "github.com/arfan21/vocagame/internal/product/usecase"
@@ -26,6 +27,7 @@ type Repository interface {
 	UpdateStatus(ctx context.Context, id string, status entity.Status) (err error)
 	GetByEmail(ctx context.Context, email string) (res []entity.Transaction, err error)
 	GetByID(ctx context.Context, id string) (res entity.Transaction, err error)
+	UpdateUpdatedAt(ctx context.Context, id string) (err error)
 }
 
 type ProductUsecase interface {
@@ -33,6 +35,7 @@ type ProductUsecase interface {
 	WithTx(tx pgx.Tx) *productusecase.UseCase
 	GetByID(ctx context.Context, id string, isForUpdate bool) (model.ProductResponse, error)
 	ReduceStock(ctx context.Context, id string, qty int) error
+	IncreaseStock(ctx context.Context, id string, qty int) error
 }
 
 type PaymentMethodUsecase interface {
@@ -195,16 +198,48 @@ func (uc UseCase) MidtransNotification(ctx context.Context, data model.MidtransN
 		// update status on database to 'pending' / waiting payment
 	}
 
+	tx, err := uc.repo.Begin(ctx)
+	if err != nil {
+		err = fmt.Errorf("transaction.uc.MidtransNotification: failed to begin transaction: %w", err)
+		return
+	}
+
+	defer func() {
+		if err != nil {
+			logger.Log(ctx).Error().Err(err).Msg("transaction.uc.MidtransNotification: failed to update status transaction, rollback transaction")
+			errRb := tx.Rollback(ctx)
+			if errRb != nil {
+				err = fmt.Errorf("transaction.uc.MidtransNotification: failed to rollback transaction: %w", errRb)
+			}
+			return
+		}
+
+		err = tx.Commit(ctx)
+	}()
+
 	transactionDataDB, err := uc.repo.GetByID(ctx, data.OrderID)
 	if err != nil {
 		err = fmt.Errorf("transaction.uc.MidtransNotification: failed to get transaction data: %w", err)
 		return
 	}
 
-	err = uc.repo.UpdateStatus(ctx, data.OrderID, statusForUpdate)
+	err = uc.repo.WithTx(tx).UpdateStatus(ctx, data.OrderID, statusForUpdate)
 	if err != nil {
 		err = fmt.Errorf("transaction.uc.MidtransNotification: failed to update status: %w", err)
 		return
+	}
+
+	if statusForUpdate == entity.StatusFailed {
+		err = uc.productUc.WithTx(tx).IncreaseStock(ctx, transactionDataDB.ProductID, transactionDataDB.Quantity)
+		if err != nil {
+			err = fmt.Errorf("transaction.uc.MidtransNotification: failed to increase stock: %w", err)
+			return
+		}
+	}
+
+	// if status not changed, no need to produce notification
+	if statusForUpdate == transactionDataDB.Status {
+		return nil
 	}
 
 	errNotif := uc.notifProducer.Produce(ctx, model.Event{
@@ -248,6 +283,50 @@ func (uc UseCase) GetByEmail(ctx context.Context, req model.TransactionTrackingR
 			CreatedAt:     transaction.CreatedAt.Format(time.DateTime),
 			UpdatedAt:     transaction.UpdatedAt.Format(time.DateTime),
 		}
+	}
+
+	return res, nil
+}
+
+func (uc UseCase) RequestNewPaymentLink(ctx context.Context, id string) (res model.TransactionCreatedResponse, err error) {
+	transactionData, err := uc.repo.GetByID(ctx, id)
+	if err != nil {
+		err = fmt.Errorf("transaction.uc.RequestNewPaymentLink: failed to get transaction data: %w", err)
+		return
+	}
+
+	if transactionData.Status != entity.StatusWaitingPayment {
+		err = fmt.Errorf("transaction.uc.RequestNewPaymentLink: failed to request new payment link: transaction status is not waiting paymen, %w", constant.ErrTransactionAlreadyPainOrFailed)
+		return
+	}
+
+	// check payment created at
+	now := time.Now()
+	paymentPageUrlExpireDuration := time.Duration(config.Get().Service.PaymentPageExpire) * time.Minute
+
+	if now.Sub(transactionData.CreatedAt) < paymentPageUrlExpireDuration ||
+		now.Sub(transactionData.UpdatedAt) < paymentPageUrlExpireDuration {
+		err = fmt.Errorf("transaction.uc.RequestNewPaymentLink: failed to request new payment link: payment page url is still valid, %w", constant.ErrPaymentPageUrlStillValid)
+		return
+	}
+
+	err = uc.repo.UpdateUpdatedAt(ctx, id)
+	if err != nil {
+		err = fmt.Errorf("transaction.uc.RequestNewPaymentLink: failed to update updated at: %w", err)
+		return
+	}
+
+	paymentClient := clientpayment.GetPaymentMethod(transactionData.PaymentMethodID, transactionData.Email)
+
+	resPayment, err := paymentClient.Pay(ctx, id, transactionData.TotalPrice)
+	if err != nil {
+		err = fmt.Errorf("transaction.uc.RequestNewPaymentLink: failed to pay: %w", err)
+		return
+	}
+
+	res = model.TransactionCreatedResponse{
+		ID:          id,
+		RedirectURL: resPayment,
 	}
 
 	return res, nil

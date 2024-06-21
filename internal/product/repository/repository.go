@@ -9,6 +9,7 @@ import (
 	"github.com/arfan21/vocagame/pkg/constant"
 	dbpostgres "github.com/arfan21/vocagame/pkg/db/postgres"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Repository struct {
@@ -62,6 +63,13 @@ func (repo Repository) GetByID(ctx context.Context, id string, isForUpdate bool)
 
 	err = row.Scan(&res.ID, &res.Name, &res.Price, &res.Stock, &res.CreatedAt, &res.UpdatedAt)
 	if err != nil {
+		var pgxError *pgconn.PgError
+		if errors.As(err, &pgxError) {
+			if pgxError.Code == constant.ErrSQLInvalidUUID {
+				err = constant.ErrProductNotFound
+			}
+		}
+
 		if errors.Is(err, pgx.ErrNoRows) {
 			err = constant.ErrProductNotFound
 		}
@@ -82,6 +90,17 @@ func (repo Repository) ReduceStock(ctx context.Context, id string, qty int) (err
 
 	if cmd.RowsAffected() == 0 {
 		err = fmt.Errorf("product.repo.ReduceStock: failed to reduce stock: stock not enough, %w", constant.ErrOutOfStock)
+		return err
+	}
+
+	return nil
+}
+
+func (repo Repository) IncreaseStock(ctx context.Context, id string, qty int) (err error) {
+	query := `UPDATE products SET stock = stock + $1 WHERE id = $2`
+	_, err = repo.db.Exec(ctx, query, qty, id)
+	if err != nil {
+		err = fmt.Errorf("product.repo.IncreaseStock: failed to increase stock: %w", err)
 		return err
 	}
 
