@@ -329,5 +329,16 @@ func (uc UseCase) RequestNewPaymentLink(ctx context.Context, id string) (res mod
 		RedirectURL: resPayment,
 	}
 
+	err = uc.notifProducer.Produce(ctx, model.Event{
+		Name:          model.EventTransactionNotification,
+		TransactionID: id,
+		Email:         transactionData.Email,
+		Url:           resPayment,
+	})
+	if err != nil {
+		err = fmt.Errorf("transaction.uc.Create: failed to produce notification: %w", err)
+		return
+	}
+
 	return res, nil
 }
