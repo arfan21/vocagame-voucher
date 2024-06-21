@@ -7,7 +7,7 @@ CREATE TABLE
         id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid (),
         product_id UUID NOT NULL,
         payment_method_id INTEGER NOT NULL,
-        phone_number TEXT NOT NULL,
+        email TEXT NOT NULL,
         quantity INTEGER NOT NULL,
         total_price DECIMAL NOT NULL,
         status payment_status NOT NULL DEFAULT 'waiting_payment',
