@@ -11,6 +11,7 @@ packages:
             ProductUsecase:
             PaymentMethodUsecase:
             MidtransCoreAPI:
+            NotificationProducer:
     github.com/arfan21/vocagame/client/payment:
         interfaces:
             Payment:

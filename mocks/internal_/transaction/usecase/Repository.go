@@ -131,21 +131,21 @@ func (_c *Repository_Create_Call) RunAndReturn(run func(context.Context, entity.
 	return _c
 }
 
-// GetByPhoneNumber provides a mock function with given fields: ctx, phoneNumber
-func (_m *Repository) GetByPhoneNumber(ctx context.Context, phoneNumber string) ([]entity.Transaction, error) {
-	ret := _m.Called(ctx, phoneNumber)
+// GetByEmail provides a mock function with given fields: ctx, email
+func (_m *Repository) GetByEmail(ctx context.Context, email string) ([]entity.Transaction, error) {
+	ret := _m.Called(ctx, email)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetByPhoneNumber")
+		panic("no return value specified for GetByEmail")
 	}
 
 	var r0 []entity.Transaction
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) ([]entity.Transaction, error)); ok {
-		return rf(ctx, phoneNumber)
+		return rf(ctx, email)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) []entity.Transaction); ok {
-		r0 = rf(ctx, phoneNumber)
+		r0 = rf(ctx, email)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]entity.Transaction)
@@ -153,7 +153,7 @@ func (_m *Repository) GetByPhoneNumber(ctx context.Context, phoneNumber string) 
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, phoneNumber)
+		r1 = rf(ctx, email)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -161,31 +161,88 @@ func (_m *Repository) GetByPhoneNumber(ctx context.Context, phoneNumber string) 
 	return r0, r1
 }
 
-// Repository_GetByPhoneNumber_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByPhoneNumber'
-type Repository_GetByPhoneNumber_Call struct {
+// Repository_GetByEmail_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByEmail'
+type Repository_GetByEmail_Call struct {
 	*mock.Call
 }
 
-// GetByPhoneNumber is a helper method to define mock.On call
+// GetByEmail is a helper method to define mock.On call
 //   - ctx context.Context
-//   - phoneNumber string
-func (_e *Repository_Expecter) GetByPhoneNumber(ctx interface{}, phoneNumber interface{}) *Repository_GetByPhoneNumber_Call {
-	return &Repository_GetByPhoneNumber_Call{Call: _e.mock.On("GetByPhoneNumber", ctx, phoneNumber)}
+//   - email string
+func (_e *Repository_Expecter) GetByEmail(ctx interface{}, email interface{}) *Repository_GetByEmail_Call {
+	return &Repository_GetByEmail_Call{Call: _e.mock.On("GetByEmail", ctx, email)}
 }
 
-func (_c *Repository_GetByPhoneNumber_Call) Run(run func(ctx context.Context, phoneNumber string)) *Repository_GetByPhoneNumber_Call {
+func (_c *Repository_GetByEmail_Call) Run(run func(ctx context.Context, email string)) *Repository_GetByEmail_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string))
 	})
 	return _c
 }
 
-func (_c *Repository_GetByPhoneNumber_Call) Return(res []entity.Transaction, err error) *Repository_GetByPhoneNumber_Call {
+func (_c *Repository_GetByEmail_Call) Return(res []entity.Transaction, err error) *Repository_GetByEmail_Call {
 	_c.Call.Return(res, err)
 	return _c
 }
 
-func (_c *Repository_GetByPhoneNumber_Call) RunAndReturn(run func(context.Context, string) ([]entity.Transaction, error)) *Repository_GetByPhoneNumber_Call {
+func (_c *Repository_GetByEmail_Call) RunAndReturn(run func(context.Context, string) ([]entity.Transaction, error)) *Repository_GetByEmail_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetByID provides a mock function with given fields: ctx, id
+func (_m *Repository) GetByID(ctx context.Context, id string) (entity.Transaction, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByID")
+	}
+
+	var r0 entity.Transaction
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (entity.Transaction, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) entity.Transaction); ok {
+		r0 = rf(ctx, id)
+	} else {
+		r0 = ret.Get(0).(entity.Transaction)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Repository_GetByID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetByID'
+type Repository_GetByID_Call struct {
+	*mock.Call
+}
+
+// GetByID is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id string
+func (_e *Repository_Expecter) GetByID(ctx interface{}, id interface{}) *Repository_GetByID_Call {
+	return &Repository_GetByID_Call{Call: _e.mock.On("GetByID", ctx, id)}
+}
+
+func (_c *Repository_GetByID_Call) Run(run func(ctx context.Context, id string)) *Repository_GetByID_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *Repository_GetByID_Call) Return(res entity.Transaction, err error) *Repository_GetByID_Call {
+	_c.Call.Return(res, err)
+	return _c
+}
+
+func (_c *Repository_GetByID_Call) RunAndReturn(run func(context.Context, string) (entity.Transaction, error)) *Repository_GetByID_Call {
 	_c.Call.Return(run)
 	return _c
 }

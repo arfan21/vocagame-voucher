@@ -18,12 +18,13 @@ import (
 )
 
 var (
-	uc              *UseCase
-	repo            Repository
-	productUc       *productusecase.UseCase
-	paymentMethodUc *mockUc.PaymentMethodUsecase
-	midtransCoreAPI *mockUc.MidtransCoreAPI
-	clientPayment   *mockPayment.Payment
+	uc                   *UseCase
+	repo                 Repository
+	productUc            *productusecase.UseCase
+	paymentMethodUc      *mockUc.PaymentMethodUsecase
+	midtransCoreAPI      *mockUc.MidtransCoreAPI
+	clientPayment        *mockPayment.Payment
+	notificationProducer *mockUc.NotificationProducer
 )
 
 func initPgMock(t *testing.T) pgxmock.PgxPoolIface {
@@ -43,9 +44,11 @@ func setup(t *testing.T, dbMock pgxmock.PgxPoolIface) {
 	paymentMethodUc = mockUc.NewPaymentMethodUsecase(t)
 	midtransCoreAPI = mockUc.NewMidtransCoreAPI(t)
 
+	notificationProducer = mockUc.NewNotificationProducer(t)
+
 	clientPayment = mockPayment.NewPayment(t)
 
-	uc = New(repo, productUc, paymentMethodUc, midtransCoreAPI)
+	uc = New(repo, productUc, paymentMethodUc, midtransCoreAPI, notificationProducer)
 }
 
 func TestCreate(t *testing.T) {
@@ -88,6 +91,8 @@ func TestCreate(t *testing.T) {
 					WillReturnResult(pgxmock.NewResult("UPDATE", 1))
 
 				dbMock.ExpectCommit()
+
+				notificationProducer.On("Produce", mock.Anything, mock.Anything).Return(nil).Once()
 
 			},
 			excpectErr: false,
@@ -231,6 +236,7 @@ func TestCreate(t *testing.T) {
 
 			paymentMethodUc.AssertExpectations(t)
 			clientPayment.AssertExpectations(t)
+			notificationProducer.AssertExpectations(t)
 		})
 	}
 

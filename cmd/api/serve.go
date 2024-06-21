@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/arfan21/vocagame/internal/server"
 	dbpostgres "github.com/arfan21/vocagame/pkg/db/postgres"
+	dbredis "github.com/arfan21/vocagame/pkg/db/redis"
 	"github.com/urfave/cli/v2"
 )
 
@@ -16,8 +17,14 @@ func Serve() *cli.Command {
 				return err
 			}
 
+			dbRedis, err := dbredis.New()
+			if err != nil {
+				return err
+			}
+
 			server := server.New(
 				db,
+				dbRedis,
 			)
 			return server.Run()
 		},

@@ -35,6 +35,7 @@ type Server struct {
 
 func New(
 	db *pgxpool.Pool,
+	redisClient *redis.Client,
 ) *Server {
 	app := fiber.New(fiber.Config{
 		ErrorHandler: exception.FiberErrorHandler,
@@ -55,8 +56,9 @@ func New(
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	return &Server{
-		app: app,
-		db:  db,
+		app:         app,
+		db:          db,
+		redisClient: redisClient,
 	}
 }
 

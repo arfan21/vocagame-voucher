@@ -323,17 +323,17 @@
         "github_com_arfan21_vocagame_internal_model.TransactionRequest": {
             "type": "object",
             "required": [
+                "email",
                 "payment_method_id",
-                "phone_number",
                 "product_id",
                 "quantity"
             ],
             "properties": {
+                "email": {
+                    "type": "string"
+                },
                 "payment_method_id": {
                     "type": "integer"
-                },
-                "phone_number": {
-                    "type": "string"
                 },
                 "product_id": {
                     "type": "string"
@@ -350,13 +350,13 @@
                 "created_at": {
                     "type": "string"
                 },
+                "email": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "string"
                 },
                 "payment_method": {
-                    "type": "string"
-                },
-                "phone_number": {
                     "type": "string"
                 },
                 "product_name": {
