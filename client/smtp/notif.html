@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Status</title>
+</head>
+<body>
+    {{ if eq .Status "waiting_payment" }}
+    <div>
+        Please complete your payment for order <b>{{ .ProductName }}</b>
+        With total price <b>{{ .TotalPrice }}</b>
+
+        <a href="{{ .Url }}">Click here to complete your payment</a>
+
+        <p>Or you can copy this link to your browser</p>
+
+        <p>{{ .Url }}</p>
+    </div>
+    {{ else }}
+    <div>
+        Your order <b>{{ .ProductName }}</b> status changed to <b>{{ .Status }}</b>
+    </div>
+    {{ end }}
+</body>
+</html>

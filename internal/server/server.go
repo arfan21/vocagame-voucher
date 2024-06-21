@@ -19,6 +19,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 )
 
@@ -27,8 +28,9 @@ const (
 )
 
 type Server struct {
-	app *fiber.App
-	db  *pgxpool.Pool
+	app         *fiber.App
+	db          *pgxpool.Pool
+	redisClient *redis.Client
 }
 
 func New(

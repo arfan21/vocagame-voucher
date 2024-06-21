@@ -18,6 +18,7 @@ type config struct {
 	Service  service  `mapstructure:",squash"`
 	Otel     otel     `mapstructure:",squash"`
 	Midtrans midtrans `mapstructure:",squash"`
+	Smtp     smtp     `mapstructure:",squash"`
 }
 
 type service struct {
@@ -54,6 +55,13 @@ type otel struct {
 
 type midtrans struct {
 	ServerKey string `mapstructure:"MIDTRANS_SERVER_KEY"`
+}
+
+type smtp struct {
+	Host     string `mapstructure:"SMTP_HOST"`
+	Port     string `mapstructure:"SMTP_PORT"`
+	Username string `mapstructure:"SMTP_USERNAME"`
+	Password string `mapstructure:"SMTP_PASSWORD"`
 }
 
 var configInstance *config

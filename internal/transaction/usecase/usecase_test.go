@@ -56,7 +56,7 @@ func TestCreate(t *testing.T) {
 		ProductID:       "1",
 		Quantity:        1,
 		PaymentMethodID: 1,
-		PhoneNumber:     "+628123456789",
+		Email:           "test@test.com",
 	}
 
 	test := []struct {
@@ -80,7 +80,7 @@ func TestCreate(t *testing.T) {
 
 				dbMock.ExpectBegin()
 				dbMock.ExpectExec("INSERT INTO transactions (.+) VALUES (.+)").
-					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.PhoneNumber, paramSucces.Quantity, pgxmock.AnyArg()).
+					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.Email, paramSucces.Quantity, pgxmock.AnyArg()).
 					WillReturnResult(pgxmock.NewResult("INSERT", 1))
 
 				dbMock.ExpectExec("UPDATE products SET stock = (.+) WHERE id = (.+)").
@@ -153,7 +153,7 @@ func TestCreate(t *testing.T) {
 
 				dbMock.ExpectBegin()
 				dbMock.ExpectExec("INSERT INTO transactions (.+) VALUES (.+)").
-					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.PhoneNumber, paramSucces.Quantity, pgxmock.AnyArg()).
+					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.Email, paramSucces.Quantity, pgxmock.AnyArg()).
 					WillReturnError(fmt.Errorf("unexpected error"))
 
 				dbMock.ExpectRollback()
@@ -174,7 +174,7 @@ func TestCreate(t *testing.T) {
 
 				dbMock.ExpectBegin()
 				dbMock.ExpectExec("INSERT INTO transactions (.+) VALUES (.+)").
-					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.PhoneNumber, paramSucces.Quantity, pgxmock.AnyArg()).
+					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.Email, paramSucces.Quantity, pgxmock.AnyArg()).
 					WillReturnResult(pgxmock.NewResult("INSERT", 1))
 
 				dbMock.ExpectExec("UPDATE products SET stock = (.+) WHERE id = (.+)").
@@ -201,7 +201,7 @@ func TestCreate(t *testing.T) {
 
 				dbMock.ExpectBegin()
 				dbMock.ExpectExec("INSERT INTO transactions (.+) VALUES (.+)").
-					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.PhoneNumber, paramSucces.Quantity, pgxmock.AnyArg()).
+					WithArgs(pgxmock.AnyArg(), paramSucces.ProductID, paramSucces.PaymentMethodID, paramSucces.Email, paramSucces.Quantity, pgxmock.AnyArg()).
 					WillReturnResult(pgxmock.NewResult("INSERT", 1))
 
 				dbMock.ExpectExec("UPDATE products SET stock = (.+) WHERE id = (.+)").

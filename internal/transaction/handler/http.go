@@ -14,7 +14,7 @@ import (
 type UseCase interface {
 	Create(ctx context.Context, data model.TransactionRequest, paymentClient clientpayment.Payment) (res model.TransactionCreatedResponse, err error)
 	MidtransNotification(ctx context.Context, data model.MidtransNotification) (err error)
-	GetByPhoneNumber(ctx context.Context, req model.TransactionTrackingRequest) (res []model.TransactionResponse, err error)
+	GetByEmail(ctx context.Context, req model.TransactionTrackingRequest) (res []model.TransactionResponse, err error)
 }
 
 type HTTP struct {
@@ -40,7 +40,7 @@ func (h HTTP) Create(c *fiber.Ctx) error {
 		return err
 	}
 
-	paymentMethod := clientpayment.GetPaymentMethod(data.PaymentMethodID, data.PhoneNumber)
+	paymentMethod := clientpayment.GetPaymentMethod(data.PaymentMethodID, data.Email)
 	if paymentMethod == nil {
 		return constant.ErrPaymentMethoUnavailable
 	}
@@ -112,7 +112,7 @@ func (h HTTP) Tracking(c *fiber.Ctx) error {
 		return err
 	}
 
-	res, err := h.uc.GetByPhoneNumber(ctx, req)
+	res, err := h.uc.GetByEmail(ctx, req)
 	if err != nil {
 		return err
 	}

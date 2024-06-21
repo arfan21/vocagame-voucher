@@ -20,11 +20,12 @@ require (
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/swag v1.16.3
 	github.com/urfave/cli/v2 v2.27.2
-	go.opentelemetry.io/otel/trace v1.27.0
 )
 
 require (
+	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
@@ -32,6 +33,7 @@ require (
 	github.com/stretchr/objx v0.5.2 // indirect
 	go.opentelemetry.io/otel v1.27.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.27.0 // indirect
+	go.opentelemetry.io/otel/trace v1.27.0 // indirect
 	golang.org/x/crypto v0.24.0 // indirect
 )
 
@@ -39,6 +41,7 @@ require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
+	github.com/dranikpg/gtrs v0.6.1
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
@@ -62,6 +65,7 @@ require (
 	github.com/pashagolub/pgxmock/v3 v3.4.0
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pressly/goose/v3 v3.21.1
+	github.com/redis/go-redis/v9 v9.5.3
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sagikazarmark/locafero v0.6.0 // indirect
@@ -76,6 +80,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.55.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
+	github.com/wneessen/go-mail v0.4.1
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
 	go.opentelemetry.io/otel/metric v1.27.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect

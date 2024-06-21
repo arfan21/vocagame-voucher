@@ -2,9 +2,11 @@ package transactionrepo
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/arfan21/vocagame/internal/entity"
+	"github.com/arfan21/vocagame/pkg/constant"
 	dbpostgres "github.com/arfan21/vocagame/pkg/db/postgres"
 	"github.com/jackc/pgx/v5"
 )
@@ -26,8 +28,8 @@ func (r Repository) WithTx(tx pgx.Tx) *Repository {
 }
 
 func (r Repository) Create(ctx context.Context, data entity.Transaction) (err error) {
-	query := `INSERT INTO transactions (id, product_id, payment_method_id, phone_number, quantity, total_price) VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err = r.db.Exec(ctx, query, data.ID, data.ProductID, data.PaymentMethodID, data.PhoneNumber, data.Quantity, data.TotalPrice)
+	query := `INSERT INTO transactions (id, product_id, payment_method_id, email, quantity, total_price) VALUES ($1, $2, $3, $4, $5, $6)`
+	_, err = r.db.Exec(ctx, query, data.ID, data.ProductID, data.PaymentMethodID, data.Email, data.Quantity, data.TotalPrice)
 	if err != nil {
 		err = fmt.Errorf("transaction.repo.Create: failed to create transaction: %w", err)
 		return err
@@ -47,13 +49,13 @@ func (r Repository) UpdateStatus(ctx context.Context, id string, status entity.S
 	return nil
 }
 
-func (r Repository) GetByPhoneNumber(ctx context.Context, phoneNumber string) (res []entity.Transaction, err error) {
+func (r Repository) GetByEmail(ctx context.Context, email string) (res []entity.Transaction, err error) {
 	query := `
 		SELECT 
 			transactions.id, 
 			product_id, 
 			payment_method_id, 
-			phone_number, 
+			email, 
 			quantity, 
 			total_price, 
 			status, 
@@ -64,10 +66,10 @@ func (r Repository) GetByPhoneNumber(ctx context.Context, phoneNumber string) (r
 		FROM transactions 
 		JOIN payment_methods ON transactions.payment_method_id = payment_methods.id
 		JOIN products ON transactions.product_id = products.id
-		WHERE phone_number = $1`
-	rows, err := r.db.Query(ctx, query, phoneNumber)
+		WHERE email = $1`
+	rows, err := r.db.Query(ctx, query, email)
 	if err != nil {
-		err = fmt.Errorf("transaction.repo.GetByPhoneNumber: failed to get transaction by phone number: %w", err)
+		err = fmt.Errorf("transaction.repo.GetByEmail: failed to get transaction by phone number: %w", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -78,7 +80,7 @@ func (r Repository) GetByPhoneNumber(ctx context.Context, phoneNumber string) (r
 			&transaction.ID,
 			&transaction.ProductID,
 			&transaction.PaymentMethodID,
-			&transaction.PhoneNumber,
+			&transaction.Email,
 			&transaction.Quantity,
 			&transaction.TotalPrice,
 			&transaction.Status,
@@ -88,11 +90,55 @@ func (r Repository) GetByPhoneNumber(ctx context.Context, phoneNumber string) (r
 			&transaction.PaymentMethod.Name,
 		)
 		if err != nil {
-			err = fmt.Errorf("transaction.repo.GetByPhoneNumber: failed to scan transaction: %w", err)
+			err = fmt.Errorf("transaction.repo.GetByEmail: failed to scan transaction: %w", err)
 			return nil, err
 		}
 
 		res = append(res, transaction)
+	}
+
+	return res, nil
+}
+
+func (r Repository) GetByID(ctx context.Context, id string) (res entity.Transaction, err error) {
+	query := `
+		SELECT 
+			transactions.id, 
+			product_id, 
+			payment_method_id, 
+			email, 
+			quantity, 
+			total_price, 
+			status, 
+			transactions.created_at, 
+			transactions.updated_at,
+			products.name as product_name,
+			payment_methods.name as payment_method_name
+		FROM transactions 
+		JOIN payment_methods ON transactions.payment_method_id = payment_methods.id
+		JOIN products ON transactions.product_id = products.id
+		WHERE transactions.id = $1`
+	row := r.db.QueryRow(ctx, query, id)
+
+	err = row.Scan(
+		&res.ID,
+		&res.ProductID,
+		&res.PaymentMethodID,
+		&res.Email,
+		&res.Quantity,
+		&res.TotalPrice,
+		&res.Status,
+		&res.CreatedAt,
+		&res.UpdatedAt,
+		&res.Product.Name,
+		&res.PaymentMethod.Name,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			err = constant.ErrTransactionNotFound
+		}
+		err = fmt.Errorf("transaction.repo.GetByID: failed to get transaction by id: %w", err)
+		return res, err
 	}
 
 	return res, nil

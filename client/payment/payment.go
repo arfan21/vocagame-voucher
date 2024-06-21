@@ -11,11 +11,11 @@ type Payment interface {
 	Pay(ctx context.Context, ID string, amount decimal.Decimal) (string, error)
 }
 
-func GetPaymentMethod(paymentMethodId int, phoneNumber string) Payment {
+func GetPaymentMethod(paymentMethodId int, email string) Payment {
 
 	// Check if payment method is available
 	if _, ok := paymentmidtrans.MidtransPaymentMethod[paymentMethodId]; ok {
-		return paymentmidtrans.NewMidtransSnapCharge(phoneNumber)
+		return paymentmidtrans.NewMidtransSnapCharge(email)
 	}
 
 	return nil

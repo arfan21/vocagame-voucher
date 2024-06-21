@@ -19,6 +19,7 @@ var (
 	ErrPaymentMethodNotFound   = &ErrWithCode{HTTPStatusCode: http.StatusNotFound, Message: "payment method not found"}
 	ErrPaymentMethoUnavailable = &ErrWithCode{HTTPStatusCode: http.StatusNotFound, Message: "payment method not available"}
 	ErrInvalidSignatureKey     = &ErrWithCode{HTTPStatusCode: http.StatusBadRequest, Message: "invalid signature key"}
+	ErrTransactionNotFound     = &ErrWithCode{HTTPStatusCode: http.StatusNotFound, Message: "transaction not found"}
 )
 
 type ErrWithCode struct {

@@ -2,6 +2,8 @@ package server
 
 import (
 	paymentmidtrans "github.com/arfan21/vocagame/client/payment/midtrans"
+	smtpclient "github.com/arfan21/vocagame/client/smtp"
+	"github.com/arfan21/vocagame/internal/notification"
 	paymentmethodhandler "github.com/arfan21/vocagame/internal/paymentmethod/handler"
 	paymentmethodrepo "github.com/arfan21/vocagame/internal/paymentmethod/repository"
 	paymentmethoduc "github.com/arfan21/vocagame/internal/paymentmethod/usecase"
@@ -37,17 +39,25 @@ func (s *Server) Routes() {
 	paymentMethodHandler := paymentmethodhandler.NewHTTP(paymentMethodUsecase)
 
 	transactionRepo := transactionrepo.New(s.db)
+
+	notificationService := notification.New(s.redisClient, smtpclient.New(), transactionRepo)
+
 	transactionUsecase := transactionuc.New(
 		transactionRepo,
 		productUsecase,
 		paymentMethodUsecase,
 		midtransCoreAPI,
+		notificationService,
 	)
 	transactionHandler := transactionhandler.NewHTTP(transactionUsecase)
 
 	s.ProductRoutes(productHandler)
 	s.PaymentMethodRoutes(paymentMethodHandler)
 	s.TransactionRoutes(transactionHandler)
+
+	go func() {
+		notificationService.Consume()
+	}()
 }
 
 func (s Server) ProductRoutes(handler *producthandler.HTTP) {

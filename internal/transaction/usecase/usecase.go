@@ -24,7 +24,8 @@ type Repository interface {
 	WithTx(tx pgx.Tx) *transactionrepo.Repository
 	Create(ctx context.Context, data entity.Transaction) (err error)
 	UpdateStatus(ctx context.Context, id string, status entity.Status) (err error)
-	GetByPhoneNumber(ctx context.Context, phoneNumber string) (res []entity.Transaction, err error)
+	GetByEmail(ctx context.Context, email string) (res []entity.Transaction, err error)
+	GetByID(ctx context.Context, id string) (res entity.Transaction, err error)
 }
 
 type ProductUsecase interface {
@@ -42,11 +43,16 @@ type MidtransCoreAPI interface {
 	CheckTransaction(ctx context.Context, orderID string) (coreapi.TransactionStatusResponse, error)
 }
 
+type NotificationProducer interface {
+	Produce(ctx context.Context, event model.Event) error
+}
+
 type UseCase struct {
 	repo            Repository
 	productUc       ProductUsecase
 	paymentMethodUc PaymentMethodUsecase
 	midtransCoreAPI MidtransCoreAPI
+	notifProducer   NotificationProducer
 }
 
 func New(
@@ -54,8 +60,9 @@ func New(
 	productUc ProductUsecase,
 	paymentMethodUc PaymentMethodUsecase,
 	midtransCoreAPI MidtransCoreAPI,
+	notifProducer NotificationProducer,
 ) *UseCase {
-	return &UseCase{repo: repo, productUc: productUc, paymentMethodUc: paymentMethodUc, midtransCoreAPI: midtransCoreAPI}
+	return &UseCase{repo: repo, productUc: productUc, paymentMethodUc: paymentMethodUc, midtransCoreAPI: midtransCoreAPI, notifProducer: notifProducer}
 }
 
 func (uc UseCase) Create(ctx context.Context, data model.TransactionRequest, paymentClient clientpayment.Payment) (res model.TransactionCreatedResponse, err error) {
@@ -113,7 +120,7 @@ func (uc UseCase) Create(ctx context.Context, data model.TransactionRequest, pay
 		ID:              id.String(),
 		ProductID:       data.ProductID,
 		PaymentMethodID: data.PaymentMethodID,
-		PhoneNumber:     data.PhoneNumber,
+		Email:           data.Email,
 		Quantity:        data.Quantity,
 		TotalPrice:      totalPrice,
 	})
@@ -138,6 +145,18 @@ func (uc UseCase) Create(ctx context.Context, data model.TransactionRequest, pay
 		ID:          id.String(),
 		RedirectURL: resPayment,
 	}
+
+	err = uc.notifProducer.Produce(ctx, model.Event{
+		Name:          model.EventTransactionNotification,
+		TransactionID: id.String(),
+		Email:         data.Email,
+		Url:           resPayment,
+	})
+	if err != nil {
+		err = fmt.Errorf("transaction.uc.Create: failed to produce notification: %w", err)
+		return
+	}
+
 	return res, nil
 }
 
@@ -176,25 +195,42 @@ func (uc UseCase) MidtransNotification(ctx context.Context, data model.MidtransN
 		// update status on database to 'pending' / waiting payment
 	}
 
+	transactionDataDB, err := uc.repo.GetByID(ctx, data.OrderID)
+	if err != nil {
+		err = fmt.Errorf("transaction.uc.MidtransNotification: failed to get transaction data: %w", err)
+		return
+	}
+
 	err = uc.repo.UpdateStatus(ctx, data.OrderID, statusForUpdate)
 	if err != nil {
 		err = fmt.Errorf("transaction.uc.MidtransNotification: failed to update status: %w", err)
 		return
 	}
 
+	errNotif := uc.notifProducer.Produce(ctx, model.Event{
+		Name:          model.EventTransactionNotification,
+		TransactionID: transactionDataDB.ID,
+		Email:         transactionDataDB.Email,
+	})
+	// if failed to produce notification, just log it
+	if errNotif != nil {
+		logger.Log(ctx).Warn().Err(errNotif).Msg("transaction.uc.MidtransNotification: failed to produce notification")
+		return
+	}
+
 	return nil
 }
 
-func (uc UseCase) GetByPhoneNumber(ctx context.Context, req model.TransactionTrackingRequest) (res []model.TransactionResponse, err error) {
+func (uc UseCase) GetByEmail(ctx context.Context, req model.TransactionTrackingRequest) (res []model.TransactionResponse, err error) {
 	// if phone number not start with '+', add '+'
 	// maybe + is missing because url query param will be encoded
-	if len(req.PhoneNumber) > 0 && req.PhoneNumber[0] != '+' {
-		// if phone number start with empty space, remove it
-		if req.PhoneNumber[0] == 32 {
-			req.PhoneNumber = req.PhoneNumber[1:]
-		}
-		req.PhoneNumber = "+" + req.PhoneNumber
-	}
+	// if len(req.PhoneNumber) > 0 && req.PhoneNumber[0] != '+' {
+	// 	// if phone number start with empty space, remove it
+	// 	if req.PhoneNumber[0] == 32 {
+	// 		req.PhoneNumber = req.PhoneNumber[1:]
+	// 	}
+	// 	req.PhoneNumber = "+" + req.PhoneNumber
+	// }
 
 	err = validation.Validate(req)
 	if err != nil {
@@ -202,7 +238,7 @@ func (uc UseCase) GetByPhoneNumber(ctx context.Context, req model.TransactionTra
 		return
 	}
 
-	transactions, err := uc.repo.GetByPhoneNumber(ctx, req.PhoneNumber)
+	transactions, err := uc.repo.GetByEmail(ctx, req.Email)
 	if err != nil {
 		err = fmt.Errorf("transaction.uc.GetByPhoneNumber: failed to get transaction by phone number: %w", err)
 		return
@@ -215,7 +251,7 @@ func (uc UseCase) GetByPhoneNumber(ctx context.Context, req model.TransactionTra
 			ID:            transaction.ID,
 			ProductName:   transaction.Product.Name,
 			PaymentMethod: transaction.PaymentMethod.Name,
-			PhoneNumber:   transaction.PhoneNumber,
+			Email:         transaction.Email,
 			Quantity:      transaction.Quantity,
 			TotalPrice:    transaction.TotalPrice,
 			Status:        string(transaction.Status),

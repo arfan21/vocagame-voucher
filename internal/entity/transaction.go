@@ -18,7 +18,7 @@ type Transaction struct {
 	ID              string          `json:"id"`
 	ProductID       string          `json:"product_id"`
 	PaymentMethodID int             `json:"payment_method_id"`
-	PhoneNumber     string          `json:"phone_number"`
+	Email           string          `json:"email"`
 	Quantity        int             `json:"quantity"`
 	TotalPrice      decimal.Decimal `json:"total_price"`
 	Status          Status          `json:"status"`

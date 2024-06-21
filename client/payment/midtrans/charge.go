@@ -11,12 +11,12 @@ import (
 )
 
 type MidtransSnapCharge struct {
-	PhoneNumber string
+	Email string
 }
 
-func NewMidtransSnapCharge(phoneNumber string) *MidtransSnapCharge {
+func NewMidtransSnapCharge(email string) *MidtransSnapCharge {
 	return &MidtransSnapCharge{
-		PhoneNumber: phoneNumber,
+		Email: email,
 	}
 }
 
@@ -30,7 +30,7 @@ func (m MidtransSnapCharge) Pay(ctx context.Context, ID string, amount decimal.D
 			GrossAmt: amount.IntPart(),
 		},
 		CustomerDetail: &midtrans.CustomerDetails{
-			Phone: m.PhoneNumber,
+			Email: m.Email,
 		},
 	}
 
