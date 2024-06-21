@@ -2,8 +2,7 @@
 
 ### Database Schema
 
-![vocagame-voucher-erd](https://github.com/arfan21/vocagame-voucher/assets/48755707/7328b09d-0e0b-4f10-839b-764ced374640)
-
+![voca](https://github.com/arfan21/vocagame-voucher/assets/48755707/b00e4132-e55a-44e5-8d0c-f151f92d9f0b)
 
 ### API Specification
 
